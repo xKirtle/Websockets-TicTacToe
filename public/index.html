@@ -2,21 +2,29 @@
 <html lang="en" dir="ltr">
 <head>
   <meta charset="utf-8">
-  <title>WebSockets</title>
+  <title>Title</title>
   <script src="/socket.io/socket.io.js"></script>
   <link href="styles.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
 </head>
 <body>
-  <div id="chat">
-    <div id="chat-window">
-      <div id="output"></div>
-      <div id="feedback"></div>
-    </div>
-    <input id="handle" type="text" placeholder="Handle"/>
-    <input id="message" type="text" placeholder="Message"/>
-    <button id="send">Send</button>
+  <form action="/" method="post" onsubmit="formSubmit()" id="form">
+    <div class="container">
+      <div class="symbol circleHover" id="circleContainer">
+        <input type="radio" name="game[symbol]" value="O" required="required" class="radio"/>
+        <hr class="circle" id="circle"/>
+      </div>
+      <div class="symbol crossHover" id="crossContainer">
+        <input type="radio" name="game[symbol]" value="X" required="required" class="radio"/>
+        <hr class="cross" id="cross"/>
+        <hr class="cross2" id="cross2"/>
+      </div>
+      <label>Choose one</label>
+      <input type="text" id="playerName" class="textInput" placeholder="Your name goes here.." required="required" name="game[name]"/>
+      <input type="number" id="roomNumber" class="numberInput" placeholder="Room No." maxlength="4" required="required" name="game[room]"/>
+      <input type="submit" id="playButton" class="button" value="Play Game"/>
+    </form>
   </div>
-  <h1>Text served by the server </h1>
 </body>
-<script src="/chat.js"></script>
+<script src="script.js"></script>
 </html>

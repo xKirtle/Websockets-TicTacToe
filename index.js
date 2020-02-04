@@ -9,7 +9,15 @@ var server = app.listen(7777, function(){
 
 // Static files
 app.use(express.static('public'));
+app.use(express.urlencoded());
+app.use(express.json());
 
+//Receive post request
+app.post('/', function(request, response){
+    console.log('Name:', request.body.game.name);
+    console.log('Room:', request.body.game.room);
+    console.log('Symbol:', request.body.game.symbol);
+});
 
 // Socket setup
 var io = socket(server);
@@ -17,13 +25,20 @@ var io = socket(server);
 io.on('connection', function(socket) {
   console.log('Connection with the socket', socket.id);
 
-  //Handle chat event
-  socket.on('chat', function(data) {
-    io.sockets.emit('chat', data);
-  });
+  // socket.on('click', function(cellId) {
+  //     io.sockets.emit('click', cellId);
+  //     console.log('Received request from', socket.id);
+  //     console.log('Updated the cell with the id of', cellId);
+  //     console.log(' ');
+  // });
 
-  //Handle chat typing event
-  socket.on('typing', function(data) {
-  socket.broadcast.emit('typing', data)
-  });
+  //Handle chat event
+  // socket.on('chat', function(data) {
+  //   io.sockets.emit('chat', data);
+  // });
+  //
+  // //Handle chat typing event
+  // socket.on('typing', function(data) {
+  // socket.broadcast.emit('typing', data)
+  // });
 });
