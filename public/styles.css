@@ -5,12 +5,13 @@ html {
 }
 
 #table {
-  display: inline-block;
+  margin: 50px 50px;
+  float: left;
 }
 
 td {
-  height: 100px;
-  width: 100px;
+  height: 30px;
+  width: 150px;
   border: 1px solid black;
   color: black;
   background-color: white;
@@ -33,6 +34,7 @@ td {
   text-align: center;
   border: 1px solid white;
   border-radius: 10px;
+  float: left;
 }
 
 .container .symbol {

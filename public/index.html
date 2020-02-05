@@ -21,10 +21,17 @@
       </div>
       <label>Choose one</label>
       <input type="text" id="playerName" class="textInput" placeholder="Your name goes here.." required="required" name="game[name]"/>
-      <input type="number" id="roomNumber" class="numberInput" placeholder="Room No." maxlength="4" required="required" name="game[room]"/>
+      <input type="number" id="roomNumber" class="numberInput" placeholder="Room No." maxlength="3" required="required" name="game[room]"/>
       <input type="submit" id="playButton" class="button" value="Play Game"/>
-    </form>
-  </div>
+    </div>
+  </form>
+
+  <table id="table">
+    <tr>
+      <td>Room No.</td>
+      <td>Players</td>
+    </tr>
+  </table>
 </body>
 <script src="script.js"></script>
 </html>
