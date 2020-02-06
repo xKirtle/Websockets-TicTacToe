@@ -85,20 +85,16 @@ roomNumber.addEventListener('input', function() {
 });
 
 function formSubmit() {
-  console.log('Valid inputs');
   let symbol = symbolRadio[0].checked == true ? symbolRadio[0].value : symbolRadio[1].value;
-  socket.emit('joinNewRoom', {
+  socket.emit('formSubmit', {
     name: playerName.value,
     room: roomNumber.value,
     symbol: symbol
   });
 }
 
-socket.on('roomJoined', function(gameRoomsList) {
-  removeAllServers();
-  for (let i = 0; i < gameRoomsList.length; i++) {
-    addNewServer(gameRoomsList[i].roomNumber, gameRoomsList[i].roomCount);
-  }
+socket.on('TestEvent', function() {
+  console.log("test");
 });
 
 function addNewServer(room, roomCount) {
