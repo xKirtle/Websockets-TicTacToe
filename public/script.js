@@ -93,6 +93,13 @@ function formSubmit() {
   });
 }
 
+socket.on('roomsList', function(gameRooms) {
+  removeAllServers();
+  for (let i = 0; i < gameRooms.length; i++) {
+    addNewServer(gameRooms[i].roomNumber, gameRooms[i].roomCount);
+  }
+});
+
 socket.on('TestEvent', function() {
   console.log("test");
 });
