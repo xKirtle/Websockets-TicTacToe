@@ -71,7 +71,8 @@ io.on('connection', function(socket) {
     }
   }
   function displayRooms() {
-    console.log("");
+    console.log("-----------------------------------------------");
+    gameRooms.sort((a, b) => { return a.roomNumber - b.roomNumber; });
     for (let i = 0; i < gameRooms.length; i++) {
       console.log(gameRooms[i]);
     }
@@ -85,10 +86,12 @@ io.on('connection', function(socket) {
     // console.log(rooms[1]); // 8Z6XiCSqKL6ZhWEHAAAA
 
     if (roomDuplicate(rooms[0], socket.id)) {
-      console.log("Player disconnected successfully.");
+      console.log('Player disconnected successfully.');
       displayRooms();
     }
 
+    //Order gameRooms
+    gameRooms.sort((a, b) => { return a.roomNumber - b.roomNumber; });
     //Emit the new gameRooms
     io.sockets.emit('roomsList', gameRooms);
   });
@@ -170,6 +173,10 @@ io.on('connection', function(socket) {
 
     //Emit the new gameRooms
     displayRooms();
+
+    //Order gameRooms
+    gameRooms.sort((a, b) => { return a.roomNumber - b.roomNumber; });
+
     io.sockets.emit('roomsList', gameRooms);
     io.to(data.room).emit('TestEvent');
   });
