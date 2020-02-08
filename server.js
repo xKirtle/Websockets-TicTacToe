@@ -65,19 +65,24 @@ io.on('connection', function(socket) {
         gameRooms.splice(duplicateIndex, 1);
       }
       return true;
-    }
-    else {
+    } else {
       return false;
     }
   }
+
+  function orderGameRooms() {
+    gameRooms.sort((a, b) => {
+      return a.roomNumber - b.roomNumber;
+    });
+  }
+
   function displayRooms() {
     console.log("-----------------------------------------------");
-    gameRooms.sort((a, b) => { return a.roomNumber - b.roomNumber; });
+    orderGameRooms();
     for (let i = 0; i < gameRooms.length; i++) {
       console.log(gameRooms[i]);
     }
   }
-
 
   socket.on('disconnecting', (reason) => {
     let rooms = Object.keys(socket.rooms);
@@ -90,8 +95,7 @@ io.on('connection', function(socket) {
       displayRooms();
     }
 
-    //Order gameRooms
-    gameRooms.sort((a, b) => { return a.roomNumber - b.roomNumber; });
+    orderGameRooms();
     //Emit the new gameRooms
     io.sockets.emit('roomsList', gameRooms);
   });
@@ -99,85 +103,99 @@ io.on('connection', function(socket) {
   socket.on('formSubmit', (data) => {
     //Disconnects from connected rooms since it can only be in one at a time
     let rooms = Object.keys(socket.rooms);
+    let playerInRoom = false;
 
-    console.log(rooms);
-    if (rooms[0].length === 3) {
+    if (rooms[0].length <= 3) {
       //Player will only ever be connected to 1 room
-      socket.leave(rooms[0]);
+      playerInRoom = true;
     }
 
-    if (roomDuplicate(rooms[0], socket.id)) {
-      console.log("Room existed and the player was removed");
-    }
-
-    //Check if room sent is already in gameRooms
-    let duplicate = false;
-    let duplicateIndex;
-    for (let i = 0; i < gameRooms.length; i++) {
-      if (gameRooms[i].roomNumber == data.room) {
-        duplicate = true;
-        duplicateIndex = i;
-        break;
+    if (playerInRoom == false) {
+      //Check if room sent is already in gameRooms
+      let duplicate = false;
+      let duplicateIndex;
+      for (let i = 0; i < gameRooms.length; i++) {
+        if (gameRooms[i].roomNumber == data.room) {
+          duplicate = true;
+          duplicateIndex = i;
+          break;
+        }
       }
-    }
+      // let newRoomObjectExample =  {
+      //   roomNumber: "123" ,
+      //   roomCount: "1",
+      //   Players: {
+      //     Player1: ["Player1Name", "O", "P1socket.id"],
+      //     Player2: ["Player2Name", "X", "P2socket.id"]
+      //   }
+      // };
 
-    // let newRoomObjectExample =  {
-    //   roomNumber: "123" ,
-    //   roomCount: "1",
-    //   Players: {
-    //     Player1: ["Player1Name", "O", "P1socket.id"],
-    //     Player2: ["Player2Name", "X", "P2socket.id"]
-    //   }
-    // };
+      let newRoom = {
+        roomNumber: data.room,
+        roomCount: "0",
+        Players: {
+          Player1: ["", "", ""],
+          Player2: ["", "", ""]
+        }
+      };
 
-    let newRoom = {
-      roomNumber: data.room,
-      roomCount: "0",
-      Players: {
-        Player1: ["", "", ""],
-        Player2: ["", "", ""]
-      }
-    };
+      // TODO: Make newRoom a constructor
 
-    if (!duplicate) {
-      newRoom.roomCount = 1;
-      newRoom.Players.Player1[0] = data.name;
-      newRoom.Players.Player1[1] = data.symbol;
-      newRoom.Players.Player1[2] = socket.id;
+      if (!duplicate) {
+        newRoom.roomCount = 1;
+        newRoom.Players.Player1[0] = data.name;
+        newRoom.Players.Player1[1] = data.symbol;
+        newRoom.Players.Player1[2] = socket.id;
 
-      gameRooms.push(newRoom);
-
-      //Client joins room
-      socket.join(data.room);
-    } else {
-      if (gameRooms[duplicateIndex].roomCount < 2) {
-        //Client joins room
-        newRoom.roomCount = parseInt(gameRooms[duplicateIndex].roomCount) + 1;
-
-        //Populate first player data since the room id is duplicated
-        newRoom.Players.Player1[0] = gameRooms[duplicateIndex].Players.Player1[0];
-        newRoom.Players.Player1[1] = gameRooms[duplicateIndex].Players.Player1[1];
-        newRoom.Players.Player1[2] = gameRooms[duplicateIndex].Players.Player1[2];
-
-        //First player joining the room gets to choose its symbol, second one just gets the one available
-        newRoom.Players.Player2[0] = data.name;
-        newRoom.Players.Player1[1] == "O" ? newRoom.Players.Player2[1] = "X" : newRoom.Players.Player2[1] = "O";
-        newRoom.Players.Player2[2] = socket.id;
-
-        gameRooms[duplicateIndex] = newRoom;
-
-        //Client joins room
+        gameRooms.push(newRoom);
         socket.join(data.room);
+      } else {
+        if (gameRooms[duplicateIndex].roomCount < 2) {
+          //Client joins room
+          newRoom.roomCount = parseInt(gameRooms[duplicateIndex].roomCount) + 1;
+
+          //Populate first player data since the room id is duplicated
+          newRoom.Players.Player1[0] = gameRooms[duplicateIndex].Players.Player1[0];
+          newRoom.Players.Player1[1] = gameRooms[duplicateIndex].Players.Player1[1];
+          newRoom.Players.Player1[2] = gameRooms[duplicateIndex].Players.Player1[2];
+
+          //First player joining the room gets to choose its symbol, second one just gets the one available
+          newRoom.Players.Player2[0] = data.name;
+          newRoom.Players.Player1[1] == "O" ? newRoom.Players.Player2[1] = "X" : newRoom.Players.Player2[1] = "O";
+          newRoom.Players.Player2[2] = socket.id;
+
+          gameRooms[duplicateIndex] = newRoom;
+          socket.join(data.room);
+        }
       }
+      //Emit the new gameRooms
+      displayRooms();
+      orderGameRooms();
+
+      io.sockets.emit('roomsList', gameRooms);
+      io.to(data.room).emit('TestEvent');
+
+      //Disable the lobby GUI
     }
+  });
 
-    //Emit the new gameRooms
-    displayRooms();
+  socket.on('leaveRoom', () => {
+    let rooms = Object.keys(socket.rooms);
 
-    //Order gameRooms
-    gameRooms.sort((a, b) => { return a.roomNumber - b.roomNumber; });
+    if (rooms[0].length <= 3) {
+      let roomToRemove = rooms[0];
+      let playerSocketId = rooms[1];
 
-    io.sockets.emit('roomsList', gameRooms);
-    io.to(data.room).emit('TestEvent');
+      if (roomDuplicate(roomToRemove, socket.id)) {
+        socket.leave(roomToRemove);
+      } else {
+        console.log("Error");
+      }
+
+      displayRooms();
+      io.sockets.emit('roomsList', gameRooms);
+
+      //Enable the lobby GUI
+    }
   });
 });

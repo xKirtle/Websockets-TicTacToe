@@ -11,20 +11,17 @@ var symbolRadio = document.getElementsByName('game[symbol]');
 var playerName = document.getElementById('playerName');
 var roomNumber = document.getElementById('roomNumber');
 var infoTable = document.getElementById('table');
+var leaveRoom = document.getElementById('leaveRoom');
 
 //O Events
 containerO.addEventListener('mouseover', mouseOverO);
 containerO.addEventListener('mouseout', mouseOutO);
-containerO.addEventListener('click', function() {
-  symbolBorderColor('O');
-});
+containerO.addEventListener('click', () => { symbolBorderColor('O'); });
 //X Events
 containerX.addEventListener('mouseover', mouseOverX);
 containerX.addEventListener('mouseout', mouseOutX);
 
-containerX.addEventListener('click', function() {
-  symbolBorderColor('X');
-});
+containerX.addEventListener('click', () => { symbolBorderColor('X'); });
 
 function mouseOutX() {
   symbolX.style.borderColor = "white";
@@ -78,6 +75,7 @@ function symbolBorderColor(symbol) {
   }
 }
 
+leaveRoom.addEventListener('click', () => { socket.emit('leaveRoom'); });
 
 //Room No. Input checker
 roomNumber.addEventListener('input', function() {
@@ -93,14 +91,14 @@ function formSubmit() {
   });
 }
 
-socket.on('roomsList', function(gameRooms) {
+socket.on('roomsList', (gameRooms) => {
   removeAllServers();
   for (let i = 0; i < gameRooms.length; i++) {
     addNewServer(gameRooms[i].roomNumber, gameRooms[i].roomCount);
   }
 });
 
-socket.on('TestEvent', function() {
+socket.on('TestEvent', () => {
   console.log("test");
 });
 

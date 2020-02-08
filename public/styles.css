@@ -1,12 +1,29 @@
+/* This css is far from dynamic and it's just a bunch of fixed values, in other words, it's bad */
+
 html {
   background-color: #232323;
   color: white;
   font-family: 'Montserrat', serif;
 }
 
-#table {
-  margin: 50px 50px;
+#form {
+  display: inline-block;
   float: left;
+  position: relative;
+}
+
+#table {
+  margin: 50px 0 0 50px;
+  float: left;
+  display: inline-block;
+}
+
+#leaveRoom {
+  margin: 10px 0 0 50px;
+  top: 360px;
+  position: absolute;
+  display: block;
+  vertical-align: bottom;
 }
 
 td {
