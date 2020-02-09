@@ -12,6 +12,10 @@ var playerName = document.getElementById('playerName');
 var roomNumber = document.getElementById('roomNumber');
 var infoTable = document.getElementById('table');
 var leaveRoom = document.getElementById('leaveRoom');
+var gameTableCorner = document.getElementsByClassName('corner');
+var lobbyContainer = document.getElementById('lobby');
+var gameTableContainer = document.getElementById('game');
+var waitRoom = document.getElementById('waitRoom');
 
 //O Events
 containerO.addEventListener('mouseover', mouseOverO);
@@ -98,6 +102,35 @@ socket.on('roomsList', (gameRooms) => {
   }
 });
 
+socket.on('joinRoom', () => {
+  roomCount == 1 ? goToWaitRoom() : goToGameRoom();
+});
+
+function goToGameRoom() {
+  lobbyContainer.style.display = "none";
+  gameTableContainer.style.display = "flex";
+  waitRoom.style.display = "none";
+  waitRoom.innerHTML = "";
+}
+
+function goToWaitRoom() {
+  lobbyContainer.style.display = "none";
+  gameTableContainer.style.display = "none";
+  waitRoom.style.display = "inline-block";
+  waitRoom.innerHTML = "Waiting for another player...";
+}
+
+function goToLobbyRoom() {
+  lobbyContainer.style.display = "flex";
+  gameTableContainer.style.display = "none";
+  waitRoom.style.display = "none";
+  waitRoom.innerHTML = "";
+}
+
+socket.on('leaveRoom', () => { goToLobbyRoom() });
+
+socket.on('goToWaitRoom', (roomCount) => { goToWaitRoom(roomCount); });
+
 socket.on('TestEvent', () => {
   console.log("test");
 });
@@ -105,6 +138,7 @@ socket.on('TestEvent', () => {
 function addNewServer(room, roomCount) {
   var newRow = document.createElement('tr');
   infoTable.appendChild(newRow);
+  newRow.classList.add("roomRow");
 
   var rowRoom = document.createElement('td');
   rowRoom.innerHTML = room;
@@ -122,4 +156,22 @@ function removeAllServers() {
   }
 
   addNewServer('Room No.', 'Players');
+}
+
+//Game Corners
+gameTableCorner[0].style.borderRadius = "10px 0 0 0";
+gameTableCorner[1].style.borderRadius = "0 10px 0 0";
+gameTableCorner[2].style.borderRadius = "0 0 0 10px";
+gameTableCorner[3].style.borderRadius = "0 0 10px 0";
+
+//Game onclick events
+for (let i = 0; i < 9; i++) {
+  let gameTile = document.getElementById('' + i + '');
+  gameTile.addEventListener('click', (i) => {
+    playerMove(i);
+  })
+}
+
+function playerMove(tileId) {
+  console.log("some text");
 }

@@ -12,12 +12,6 @@ html {
   position: relative;
 }
 
-#table {
-  margin: 50px 0 0 50px;
-  float: left;
-  display: inline-block;
-}
-
 #leaveRoom {
   margin: 10px 0 0 50px;
   top: 360px;
@@ -26,23 +20,65 @@ html {
   vertical-align: bottom;
 }
 
-td {
+#table {
+  margin: 50px 0 0 50px;
+  float: left;
+  display: inline-block;
+}
+
+#waitRoom {
+  display: none;
+}
+
+#waitRoom div {
+  margin-top: 50px;
+}
+
+.roomRow > td {
   height: 30px;
   width: 150px;
   border: 1px solid black;
   color: black;
   background-color: white;
   text-align: center;
-  font-family: sans-serif;
+  font-family: 'Montserrat', sans-serif;
   font-size: 26px;
   pointer-events: all;
 }
 
-.container {
+.table { /* Game Table */
+  margin: 50px 50px;
+  height: 290px;
+  width: 290px;
+  display: none;
+  flex-wrap: wrap;
+  flex-direction: row;
+  justify-content: center;
+  align-items: auto;
+  align-content: flex-start;
+  text-align: center;
+  border: 1px solid white;
+  border-radius: 10px;
+  float: left;
+}
+
+.gameRow > td {
+  height: 90px;
+  width: 90px;
+  border: 1px solid black;
+  color: black;
+  background-color: white;
+  text-align: center;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 26px;
+  border-radius: 3px;
+}
+
+.container { /*Game Lobby */
   margin: 50px 50px;
   height: 294px;
   width: 294px;
-  display: flex;
+  display: flex; /* flex */
   flex-wrap: wrap;
   flex-direction: row;
   justify-content: center;
