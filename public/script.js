@@ -16,6 +16,10 @@ var gameTableCorner = document.getElementsByClassName('corner');
 var lobbyContainer = document.getElementById('lobby');
 var gameTableContainer = document.getElementById('game');
 var waitRoom = document.getElementById('waitRoom');
+var message = document.getElementById('message');
+var btn = document.getElementById('send');
+var output = document.getElementById('output');
+var feedback = document.getElementById('feedback');
 
 //O Events
 containerO.addEventListener('mouseover', mouseOverO);
@@ -85,6 +89,31 @@ roomNumber.addEventListener('input', function() {
   this.value = Math.abs(this.value.replace(/[^0-9]/g, '').slice(0,this.maxLength));
 });
 
+//Chat
+btn.addEventListener('click', () => {
+  if (playerName.value.length > 0) {
+    socket.emit('chat', {
+      message: message.value,
+      handle: playerName.value
+    });
+    message.value = '';
+  }
+});
+
+message.addEventListener('keypress', () => {
+  socket.emit('typing', playerName.value);
+});
+
+socket.on('chat', (data) => {
+  feedback.innerHTML = '';
+  output.innerHTML += '<p><strong>' + data.handle + ': </strong>' + data.message + '</p>';
+});
+
+socket.on('typing', (data) => {
+  feedback.innerHTML = '<p><em>' + data + ' is typing a message..</em></p>';
+});
+
+//Lobby related functions
 function formSubmit() {
   let symbol = symbolRadio[0].checked == true ? symbolRadio[0].value : symbolRadio[1].value;
   socket.emit('formSubmit', {
@@ -93,17 +122,6 @@ function formSubmit() {
     symbol: symbol
   });
 }
-
-socket.on('roomsList', (gameRooms) => {
-  removeAllServers();
-  for (let i = 0; i < gameRooms.length; i++) {
-    addNewServer(gameRooms[i].roomNumber, gameRooms[i].roomCount);
-  }
-});
-
-socket.on('joinRoom', (roomCount) => {
-  roomCount == 1 ? goToWaitRoom() : goToGameRoom();
-});
 
 function goToGameRoom() {
   lobbyContainer.style.display = "none";
@@ -126,6 +144,17 @@ function goToLobbyRoom() {
   waitRoom.innerHTML = "";
 }
 
+socket.on('roomsList', (gameRooms) => {
+  removeAllServers();
+  for (let i = 0; i < gameRooms.length; i++) {
+    addNewServer(gameRooms[i].roomNumber, gameRooms[i].roomCount);
+  }
+});
+
+socket.on('joinRoom', (roomCount) => {
+  roomCount == 1 ? goToWaitRoom() : goToGameRoom();
+});
+
 socket.on('leaveRoom', () => { goToLobbyRoom() });
 
 socket.on('goToWaitRoom', (roomCount) => { goToWaitRoom(roomCount); });
@@ -134,6 +163,7 @@ socket.on('TestEvent', () => {
   console.log("test");
 });
 
+//Rooms display functions
 function addNewServer(room, roomCount) {
   var newRow = document.createElement('tr');
   infoTable.appendChild(newRow);
