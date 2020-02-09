@@ -24,7 +24,6 @@ containerO.addEventListener('click', () => { symbolBorderColor('O'); });
 //X Events
 containerX.addEventListener('mouseover', mouseOverX);
 containerX.addEventListener('mouseout', mouseOutX);
-
 containerX.addEventListener('click', () => { symbolBorderColor('X'); });
 
 function mouseOutX() {
@@ -102,7 +101,7 @@ socket.on('roomsList', (gameRooms) => {
   }
 });
 
-socket.on('joinRoom', () => {
+socket.on('joinRoom', (roomCount) => {
   roomCount == 1 ? goToWaitRoom() : goToGameRoom();
 });
 

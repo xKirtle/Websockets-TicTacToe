@@ -150,7 +150,7 @@ io.on('connection', function(socket) {
 
         gameRooms.push(newRoom);
         socket.join(data.room);
-        io.to(data.room).emit('joinRoom', "1");
+        socket.emit('joinRoom', 1);
       } else {
         if (gameRooms[duplicateIndex].roomCount < 2) {
           //Client joins room
@@ -169,6 +169,7 @@ io.on('connection', function(socket) {
           gameRooms[duplicateIndex] = newRoom;
           socket.join(data.room);
 
+          socket.emit('joinRoom', gameRooms[duplicateIndex].roomCount);
           io.to(data.room).emit('joinRoom', gameRooms[duplicateIndex].roomCount);
         }
       }
@@ -187,20 +188,20 @@ io.on('connection', function(socket) {
     if (rooms[0].length <= 3) {
       let roomToRemove = rooms[0];
       let playerSocketId = rooms[1];
+      let roomIndex = -1;
 
       if (roomDuplicate(roomToRemove, socket.id)) {
-        let roomIndex = gameRooms.map(function(room) { return room.roomNumber; }).indexOf(roomToRemove);
-        if (roomIndex >= 0) {
-          io.to(gameRooms[roomIndex].Players.Player1[2]).emit('goToWaitRoom'); //gameRooms[roomIndex].roomCount will be always 1 here
-          socket.leave(roomToRemove);
-        }
+        roomIndex = gameRooms.map(function(room) { return room.roomNumber; }).indexOf(roomToRemove);
       }
 
+      if (roomIndex >= 0) {
+        io.to(gameRooms[roomIndex].Players.Player1[2]).emit('goToWaitRoom'); //gameRooms[roomIndex].roomCount will be always 1 here
+      }
+
+      socket.leave(roomToRemove);
       displayRooms();
       io.sockets.emit('roomsList', gameRooms);
       socket.emit('leaveRoom');
     }
   });
 });
-
-// BUG: Player joins room, leaves room, tries to join a new room but can't
