@@ -10,7 +10,6 @@ html {
 }
 
 #form {
-  display: inline-block;
   float: left;
   position: relative;
 }
@@ -20,12 +19,10 @@ html {
   top: 360px;
   position: absolute;
   display: block;
-  vertical-align: bottom;
 }
 
 #table {
   margin: 50px 40px 0 50px;
-  float: left;
   display: inline-block;
 }
 
@@ -37,7 +34,7 @@ html {
   margin-top: 50px;
 }
 
-.roomRow > td {
+.roomRow>td {
   height: 30px;
   width: 150px;
   border: 1px solid black;
@@ -50,7 +47,8 @@ html {
   pointer-events: all;
 }
 
-.table { /* Game Table */
+.table {
+  /* Game Table */
   margin: 50px 50px;
   height: 290px;
   width: 290px;
@@ -66,7 +64,7 @@ html {
   float: left;
 }
 
-.gameRow > td {
+.gameRow>td {
   height: 90px;
   width: 90px;
   border: 1px solid black;
@@ -78,11 +76,13 @@ html {
   border-radius: 3px;
 }
 
-.container { /*Game Lobby */
+.container {
+  /*Game Lobby */
   margin: 50px 50px;
   height: 294px;
   width: 294px;
-  display: flex; /* flex */
+  display: flex;
+  /* flex */
   flex-wrap: wrap;
   flex-direction: row;
   justify-content: center;
@@ -103,17 +103,17 @@ html {
   border-radius: 10px;
 }
 
-.symbol > .cross {
+.symbol>.cross {
   margin-top: 57px;
   transform: rotateZ(45deg);
 }
 
-.cross + .cross2 {
+.cross+.cross2 {
   margin-top: -10px;
   transform: rotateZ(-45deg);
 }
 
-.symbol > .circle {
+.symbol>.circle {
   margin-top: 14%;
   width: 80px;
   height: 80px;
@@ -179,7 +179,7 @@ h2 {
   width: 310px;
   margin: 50px 40px 0px 50px;
   border: 1px solid #ddd;
-  box-shadow: 1px 3px 5px rgba(0,0,0,0.05);
+  box-shadow: 1px 3px 5px rgba(0, 0, 0, 0.05);
   border-radius: 5px;
   word-wrap: break-word;
   float: left;
@@ -215,7 +215,7 @@ h2 {
   background: #f9f9f9;
 }
 
-#chat > input {
+#chat>input {
   padding: 10px 20px;
   box-sizing: border-box;
   background: #eee;

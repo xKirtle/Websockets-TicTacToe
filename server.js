@@ -3,7 +3,7 @@ var socket = require('socket.io');
 
 //App setup
 var app = express();
-var server = app.listen(7777, function() {
+var server = app.listen(7777, function () {
   console.log('Listening to requests on port 7777');
 });
 
@@ -14,7 +14,7 @@ app.use(express.json());
 var gameRooms = [];
 
 //Receive post request
-app.post('/', function(request, response) {
+app.post('/', function (request, response) {
   // console.log('Name:', request.body.game.name);
   // console.log('Room:', request.body.game.room);
   // console.log('Symbol:', request.body.game.symbol);
@@ -26,16 +26,16 @@ app.post('/', function(request, response) {
 //Socket setup
 var io = socket(server);
 
-io.on('connection', function(socket) {
+io.on('connection', function (socket) {
   console.log('Connection with the socket', socket.id);
   socket.emit('roomsList', gameRooms);
   //console.log(io.nsps['/'].adapter.rooms);
 
-  function roomDuplicate(room, socketId) {
+  function findRoomByNumber(roomNumber) {
     let duplicate = false;
     let duplicateIndex;
     for (let i = 0; i < gameRooms.length; i++) {
-      if (gameRooms[i].roomNumber == room) {
+      if (gameRooms[i].roomNumber == roomNumber) {
         duplicate = true;
         duplicateIndex = i;
         break;
@@ -43,6 +43,16 @@ io.on('connection', function(socket) {
     }
 
     if (duplicate) {
+      return duplicateIndex;
+    } else {
+      return -1;
+    }
+  }
+
+  function roomDuplicate(room, socketId) {
+    let duplicateIndex = findRoomByNumber(room);
+
+    if (duplicateIndex >= 0) {
       let player1 = gameRooms[duplicateIndex].Players.Player1;
       let player2 = gameRooms[duplicateIndex].Players.Player2;
 
@@ -85,6 +95,20 @@ io.on('connection', function(socket) {
     }
   }
 
+  function randomFirstPlayer(roomIndex) {
+    let random = Math.floor(Math.random() * 2);
+    random == 0 ? gameRooms[roomIndex].currentPlayer = gameRooms[roomIndex].Players.Player1[2] : gameRooms[roomIndex].currentPlayer = gameRooms[roomIndex].Players.Player2[2];
+  }
+
+  function switchPlayer(roomIndex) {
+    let currentPlayer = gameRooms[roomIndex].currentPlayer;
+    let player1 = gameRooms[roomIndex].Players.Player1[2];
+    let player2 = gameRooms[roomIndex].Players.Player2[2];
+    currentPlayer == player1 ? currentPlayer = player2 : currentPlayer = player1;
+
+    gameRooms[roomIndex].currentPlayer = currentPlayer;
+  }
+
   socket.on('disconnecting', (reason) => {
     let rooms = Object.keys(socket.rooms);
     // console.log(rooms); // [ '123', '8Z6XiCSqKL6ZhWEHAAAA' ]
@@ -113,6 +137,8 @@ io.on('connection', function(socket) {
 
     if (playerInRoom == false) {
       //Check if room sent is already in gameRooms
+
+      // TODO: implement findRoomByNumber below
       let duplicate = false;
       let duplicateIndex;
       for (let i = 0; i < gameRooms.length; i++) {
@@ -128,7 +154,8 @@ io.on('connection', function(socket) {
       //   Players: {
       //     Player1: ["Player1Name", "O", "P1socket.id"],
       //     Player2: ["Player2Name", "X", "P2socket.id"]
-      //   }
+      //   },
+      //   currentPlayer: ""
       // };
 
       let newRoom = {
@@ -137,7 +164,8 @@ io.on('connection', function(socket) {
         Players: {
           Player1: ["", "", ""],
           Player2: ["", "", ""]
-        }
+        },
+        currentPlayer: ""
       };
 
       // TODO: Make newRoom a constructor
@@ -171,8 +199,11 @@ io.on('connection', function(socket) {
 
           socket.emit('joinRoom', gameRooms[duplicateIndex].roomCount);
           io.to(data.room).emit('joinRoom', gameRooms[duplicateIndex].roomCount);
+
+          randomFirstPlayer(duplicateIndex);
         }
       }
+
       //Emit the new gameRooms
       displayRooms();
       orderGameRooms();
@@ -191,7 +222,9 @@ io.on('connection', function(socket) {
       let roomIndex = -1;
 
       if (roomDuplicate(roomToRemove, socket.id)) {
-        roomIndex = gameRooms.map(function(room) { return room.roomNumber; }).indexOf(roomToRemove);
+        roomIndex = gameRooms.map(function (room) {
+          return room.roomNumber;
+        }).indexOf(roomToRemove);
       }
 
       if (roomIndex >= 0) {
@@ -211,6 +244,21 @@ io.on('connection', function(socket) {
   });
 
   socket.on('typing', (data) => {
-  socket.broadcast.emit('typing', data)
+    socket.broadcast.emit('typing', data)
+  });
+
+  socket.on('playerMove', (data) => {
+    let roomIndex = findRoomByNumber(data.roomNumber);
+
+    if (roomIndex >= 0) {
+      let currentPlayer = gameRooms[roomIndex].currentPlayer;
+      if (currentPlayer == data.playerSocket) {
+        io.to(data.roomNumber).emit('playerMove', {
+          tileId: data.tileId,
+          player: gameRooms[roomIndex].currentPlayer
+        });
+        switchPlayer(roomIndex);
+      }
+    }
   });
 });

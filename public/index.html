@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
+
 <head>
   <meta charset="utf-8">
   <title>Title</title>
@@ -7,22 +8,25 @@
   <link href="styles.css" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
 </head>
+
 <body>
   <form action="/" method="post" onsubmit="formSubmit()" id="form">
     <div class="container" id="lobby">
       <div class="symbol circleHover" id="circleContainer">
-        <input type="radio" name="game[symbol]" value="O" required="required" class="radio"/>
-        <hr class="circle" id="circle"/>
+        <input type="radio" name="game[symbol]" value="O" required="required" class="radio" />
+        <hr class="circle" id="circle" />
       </div>
       <div class="symbol crossHover" id="crossContainer">
-        <input type="radio" name="game[symbol]" value="X" required="required" class="radio"/>
-        <hr class="cross" id="cross"/>
-        <hr class="cross2" id="cross2"/>
+        <input type="radio" name="game[symbol]" value="X" required="required" class="radio" />
+        <hr class="cross" id="cross" />
+        <hr class="cross2" id="cross2" />
       </div>
       <label>Choose one</label>
-      <input type="text" id="playerName" class="textInput" placeholder="Your name goes here.." required="required" name="game[name]"/>
-      <input type="number" id="roomNumber" class="numberInput" placeholder="Room No." maxlength="3" required="required" name="game[room]"/>
-      <input type="submit" id="playButton" class="button" value="Play Game"/>
+      <input type="text" id="playerName" class="textInput" placeholder="Your name goes here.." required="required"
+        name="game[name]" />
+      <input type="number" id="roomNumber" class="numberInput" placeholder="Room No." maxlength="3" required="required"
+        name="game[room]" />
+      <input type="submit" id="playButton" class="button" value="Play Game" />
     </div>
 
     <div class="table" id="game">
@@ -39,7 +43,7 @@
         </tr>
         <tr class="gameRow">
           <td id="6" class="corner"> </td>
-          <td id="7">  </td>
+          <td id="7"> </td>
           <td id="8" class="corner"> </td>
         </tr>
       </table>
@@ -48,7 +52,7 @@
     <div class="container" id="waitRoom"></div>
   </form>
 
-  <input type="button" id="leaveRoom" class="button" value="Leave Room"/>
+  <input type="button" id="leaveRoom" class="button" value="Leave Room" />
 
   <table id="table">
     <tr class="roomRow">
@@ -62,9 +66,10 @@
       <div id="output"></div>
       <div id="feedback"></div>
     </div>
-    <input id="message" type="text" placeholder="Message"/>
+    <input id="message" type="text" placeholder="Message" />
     <button id="send">Send</button>
   </div>
 </body>
 <script src="script.js"></script>
+
 </html>

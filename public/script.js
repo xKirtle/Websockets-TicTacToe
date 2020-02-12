@@ -1,5 +1,5 @@
 // Make Connection
-var socket = io.connect();//.connect('http://localhost:7777');
+var socket = io.connect(); //.connect('http://localhost:7777');
 
 //DOM Queries
 var containerO = document.getElementById('circleContainer');
@@ -24,23 +24,30 @@ var feedback = document.getElementById('feedback');
 //O Events
 containerO.addEventListener('mouseover', mouseOverO);
 containerO.addEventListener('mouseout', mouseOutO);
-containerO.addEventListener('click', () => { symbolBorderColor('O'); });
+containerO.addEventListener('click', () => {
+  symbolBorderColor('O');
+});
 //X Events
 containerX.addEventListener('mouseover', mouseOverX);
 containerX.addEventListener('mouseout', mouseOutX);
-containerX.addEventListener('click', () => { symbolBorderColor('X'); });
+containerX.addEventListener('click', () => {
+  symbolBorderColor('X');
+});
 
 function mouseOutX() {
   symbolX.style.borderColor = "white";
   symbolX2.style.borderColor = "white";
 }
+
 function mouseOverX() {
   symbolX.style.borderColor = "dodgerblue";
   symbolX2.style.borderColor = "dodgerblue";
 }
+
 function mouseOutO() {
   symbolO.style.borderColor = "white";
 }
+
 function mouseOverO() {
   symbolO.style.borderColor = "dodgerblue";
 }
@@ -82,22 +89,33 @@ function symbolBorderColor(symbol) {
   }
 }
 
-leaveRoom.addEventListener('click', () => { socket.emit('leaveRoom'); });
+leaveRoom.addEventListener('click', () => {
+  socket.emit('leaveRoom');
+});
 
 //Room No. Input checker
-roomNumber.addEventListener('input', function() {
-  this.value = Math.abs(this.value.replace(/[^0-9]/g, '').slice(0,this.maxLength));
+roomNumber.addEventListener('input', function () {
+  this.value = Math.abs(this.value.replace(/[^0-9]/g, '').slice(0, this.maxLength));
 });
 
 //Chat
-btn.addEventListener('click', () => {
-  if (playerName.value.length > 0) {
+function sendMessage() {
+  if (playerName.value.replace(/\s/g, "").length > 0 && message.value.length > 0) {
     socket.emit('chat', {
       message: message.value,
       handle: playerName.value
     });
     message.value = '';
+  } else {
+    alert('Please select a username before using the chat');
+    playerName.focus();
   }
+}
+btn.addEventListener('click', sendMessage);
+
+message.addEventListener('keypress', (evt) => {
+  let keycode = (evt.keyCode ? evt.keyCode : evt.which);
+  if (keycode == '13') sendMessage();
 });
 
 message.addEventListener('keypress', () => {
@@ -155,9 +173,13 @@ socket.on('joinRoom', (roomCount) => {
   roomCount == 1 ? goToWaitRoom() : goToGameRoom();
 });
 
-socket.on('leaveRoom', () => { goToLobbyRoom() });
+socket.on('leaveRoom', () => {
+  goToLobbyRoom()
+});
 
-socket.on('goToWaitRoom', (roomCount) => { goToWaitRoom(roomCount); });
+socket.on('goToWaitRoom', (roomCount) => {
+  goToWaitRoom(roomCount);
+});
 
 socket.on('TestEvent', () => {
   console.log("test");
@@ -180,7 +202,7 @@ function addNewServer(room, roomCount) {
 }
 
 function removeAllServers() {
-  while(infoTable.firstChild) {
+  while (infoTable.firstChild) {
     infoTable.removeChild(infoTable.firstChild);
   }
 
@@ -202,5 +224,19 @@ for (let i = 0; i < 9; i++) {
 }
 
 function playerMove(tileId) {
-  console.log("some text");
+  let myIndex = parseInt(tileId);
+
+  socket.emit('playerMove', {
+    playerSocket: socket.id,
+    tileId: tileId,
+    roomNumber: roomNumber.value
+  });
+}
+
+socket.on('playerMove', (data) => {
+  drawMove(data.tileId, data.player);
+});
+
+function drawMove(tileId, player) {
+  console.log('drawMove function');
 }
