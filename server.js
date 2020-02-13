@@ -12,13 +12,21 @@ app.use(express.static('public'));
 app.use(express.urlencoded());
 app.use(express.json());
 var gameRooms = [];
+var gameOver = false;
+var gameTie = false;
+const winningCases = [
+  [0, 1, 2],
+  [3, 4, 5],
+  [6, 7, 8],
+  [0, 3, 6],
+  [1, 4, 7],
+  [2, 5, 8],
+  [0, 4, 8],
+  [2, 4, 6]
+];
 
 //Receive post request
 app.post('/', function (request, response) {
-  // console.log('Name:', request.body.game.name);
-  // console.log('Room:', request.body.game.room);
-  // console.log('Symbol:', request.body.game.symbol);
-
   //Stays on the same page
   response.status(204).send();
 });
@@ -109,6 +117,87 @@ io.on('connection', function (socket) {
     gameRooms[roomIndex].currentPlayer = currentPlayer;
   }
 
+  function convertSocketToPlayer(roomIndex) {
+    let currentPlayer = gameRooms[roomIndex].currentPlayer;
+
+    if (currentPlayer == gameRooms[roomIndex].Players.Player1[2]) {
+      return "player1";
+    } else {
+      return "player2";
+    }
+  }
+
+  function validateMove(roomIndex, tileId) {
+    let player1 = gameRooms[roomIndex].Players.Player1[3];
+    let player2 = gameRooms[roomIndex].Players.Player2[3];
+    if (player1.includes(tileId) || player2.includes(tileId)) {
+      return false;
+    } else {
+      return true;
+    }
+  }
+
+  function cleanBoard(roomNumber) {
+    io.to(roomNumber).emit('cleanBoard');
+    gameOver = false;
+    gameTie = false;
+  }
+
+  function checkEndGame(roomIndex) {
+    let player1 = gameRooms[roomIndex].Players.Player1[3];
+    let player2 = gameRooms[roomIndex].Players.Player2[3];
+
+    let player1Win;
+    let player2Win;
+
+    for (let i = 0; i < winningCases.length; i++) {
+      let player1Counter = 0;
+      let player2Counter = 0;
+
+      for (let j = 0; j < winningCases[i].length; j++) {
+
+        if (player1.includes(winningCases[i][j])) {
+          player1Counter += 1;
+
+          if (player1Counter == 3) {
+            player1Win = true;
+          }
+        }
+
+        if (player2.includes(winningCases[i][j])) {
+          player2Counter += 1;
+
+          if (player2Counter == 3) {
+            player2Win = true;
+          }
+        }
+      }
+    }
+
+    if (player1Win) {
+      console.log('Player1 Wins');
+      gameOver = true;
+      io.to(gameRooms[roomIndex].roomNumber).emit('winnerDisplay', gameRooms[roomIndex].Players.Player1[0]);
+    } else if (player2Win) {
+      console.log('Player2 Wins');
+      gameOver = true;
+      io.to(gameRooms[roomIndex].roomNumber).emit('winnerDisplay', gameRooms[roomIndex].Players.Player2[0]);
+    }
+
+    if (!gameOver && (player1.length + player2.length == 9)) {
+      console.log('Tie');
+
+      gameOver = true;
+      gameTie = true;
+    }
+
+    if (gameOver) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   socket.on('disconnecting', (reason) => {
     let rooms = Object.keys(socket.rooms);
     // console.log(rooms); // [ '123', '8Z6XiCSqKL6ZhWEHAAAA' ]
@@ -123,6 +212,14 @@ io.on('connection', function (socket) {
     orderGameRooms();
     //Emit the new gameRooms
     io.sockets.emit('roomsList', gameRooms);
+  });
+
+  socket.on('disconnect', (reason) => {
+    // TODO:
+    //if player disconnects abruptly from a game, the remaining player will
+    //be sent to the waitingRoom and the game progress will be wiped
+
+    //Maybe ping clients each x seconds?
   });
 
   socket.on('formSubmit', (data) => {
@@ -152,8 +249,8 @@ io.on('connection', function (socket) {
       //   roomNumber: "123" ,
       //   roomCount: "1",
       //   Players: {
-      //     Player1: ["Player1Name", "O", "P1socket.id"],
-      //     Player2: ["Player2Name", "X", "P2socket.id"]
+      //     Player1: ["Player1Name", "O", "P1socket.id", [PlayedSpaces]],
+      //     Player2: ["Player2Name", "X", "P2socket.id", [PlayedSpaces]]
       //   },
       //   currentPlayer: ""
       // };
@@ -162,8 +259,8 @@ io.on('connection', function (socket) {
         roomNumber: data.room,
         roomCount: "0",
         Players: {
-          Player1: ["", "", ""],
-          Player2: ["", "", ""]
+          Player1: ["", "", "", []],
+          Player2: ["", "", "", []]
         },
         currentPlayer: ""
       };
@@ -201,15 +298,18 @@ io.on('connection', function (socket) {
           io.to(data.room).emit('joinRoom', gameRooms[duplicateIndex].roomCount);
 
           randomFirstPlayer(duplicateIndex);
+          let player = convertSocketToPlayer(duplicateIndex);
+          let playerTurn = player == "player1" ? gameRooms[duplicateIndex].Players.Player1[0] : gameRooms[duplicateIndex].Players.Player2[0];
+          io.to(data.room).emit('currentPlayerDisplay', playerTurn);
         }
       }
-
       //Emit the new gameRooms
+      cleanBoard(data.room);
+      displayRooms();
       displayRooms();
       orderGameRooms();
 
       io.sockets.emit('roomsList', gameRooms);
-      io.to(data.room).emit('TestEvent');
     }
   });
 
@@ -218,7 +318,6 @@ io.on('connection', function (socket) {
 
     if (rooms[0].length <= 3) {
       let roomToRemove = rooms[0];
-      let playerSocketId = rooms[1];
       let roomIndex = -1;
 
       if (roomDuplicate(roomToRemove, socket.id)) {
@@ -247,17 +346,48 @@ io.on('connection', function (socket) {
     socket.broadcast.emit('typing', data)
   });
 
+  //TicTacToe
   socket.on('playerMove', (data) => {
     let roomIndex = findRoomByNumber(data.roomNumber);
-
     if (roomIndex >= 0) {
+
       let currentPlayer = gameRooms[roomIndex].currentPlayer;
-      if (currentPlayer == data.playerSocket) {
-        io.to(data.roomNumber).emit('playerMove', {
-          tileId: data.tileId,
-          player: gameRooms[roomIndex].currentPlayer
-        });
-        switchPlayer(roomIndex);
+      if (currentPlayer == socket.id) {
+        let player = convertSocketToPlayer(roomIndex);
+        let playerSymbol = player == "player1" ? gameRooms[roomIndex].Players.Player1[1] : gameRooms[roomIndex].Players.Player2[1];
+        let playerTurn = player == "player1" ? gameRooms[roomIndex].Players.Player2[0] : gameRooms[roomIndex].Players.Player1[0];
+
+        //Validate and see if spot is empty
+        let canPlay = validateMove(roomIndex, data.tileId);
+        if (canPlay) {
+          io.to(data.roomNumber).emit('playerMove', {
+            tileId: data.tileId,
+            player: playerTurn,
+            symbol: playerSymbol
+          });
+
+          switchPlayer(roomIndex);
+          //Add move to played array
+          player == "player1" ? gameRooms[roomIndex].Players.Player1[3].push(data.tileId) : gameRooms[roomIndex].Players.Player2[3].push(data.tileId);
+
+          //Check if game ended
+          let game = checkEndGame(roomIndex);
+          if (game) {
+            cleanBoard(data.roomNumber);
+
+            function end() {
+              gameRooms.splice(roomIndex, 1);
+              io.to(data.roomNumber).emit('leaveRoom');
+              io.to(data.roomNumber).emit('cleanText')
+              io.in(data.roomNumber).clients((err, clients) => {
+                clients.forEach(clientId => io.sockets.connected[clientId].disconnect());
+              });
+              io.sockets.emit('roomsList', gameRooms);
+            }
+
+            setTimeout(end, 3000);
+          }
+        }
       }
     }
   });

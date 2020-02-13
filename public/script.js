@@ -20,6 +20,9 @@ var message = document.getElementById('message');
 var btn = document.getElementById('send');
 var output = document.getElementById('output');
 var feedback = document.getElementById('feedback');
+var gameSpace = gameTableContainer.getElementsByTagName('td');
+var currentPlayer = document.getElementById('currentPlayer');
+var winner = document.getElementById('winner');
 
 //O Events
 containerO.addEventListener('mouseover', mouseOverO);
@@ -106,9 +109,11 @@ function sendMessage() {
       handle: playerName.value
     });
     message.value = '';
-  } else {
-    alert('Please select a username before using the chat');
+  } else if (!playerName.value.replace(/\s/g, "").length > 0) {
+    alert('Please select a username before using the chat ');
     playerName.focus();
+  } else {
+    alert('Please write a valid message!');
   }
 }
 btn.addEventListener('click', sendMessage);
@@ -181,10 +186,6 @@ socket.on('goToWaitRoom', (roomCount) => {
   goToWaitRoom(roomCount);
 });
 
-socket.on('TestEvent', () => {
-  console.log("test");
-});
-
 //Rooms display functions
 function addNewServer(room, roomCount) {
   var newRow = document.createElement('tr');
@@ -218,25 +219,56 @@ gameTableCorner[3].style.borderRadius = "0 0 10px 0";
 //Game onclick events
 for (let i = 0; i < 9; i++) {
   let gameTile = document.getElementById('' + i + '');
-  gameTile.addEventListener('click', (i) => {
+  gameTile.addEventListener('click', () => {
     playerMove(i);
   })
 }
 
 function playerMove(tileId) {
-  let myIndex = parseInt(tileId);
-
   socket.emit('playerMove', {
-    playerSocket: socket.id,
     tileId: tileId,
     roomNumber: roomNumber.value
   });
 }
 
 socket.on('playerMove', (data) => {
-  drawMove(data.tileId, data.player);
+  drawMove(data.tileId, data.symbol);
+  currentPlayerDisplay(data.player);
 });
 
-function drawMove(tileId, player) {
-  console.log('drawMove function');
+socket.on('currentPlayerDisplay', (player) => {
+  currentPlayerDisplay(player);
+});
+
+socket.on('cleanBoard', () => {
+  for (let i = 0; i < 9; i++) {
+    gameSpace[i].textContent = '';
+  }
+});
+
+socket.on('winnerDisplay', (player) => {
+  winnerDisplay(player);
+});
+
+socket.on('cleanText', () => {
+  cleanText();
+});
+
+function currentPlayerDisplay(player) {
+  currentPlayer.textContent = "It's " + player + "'s turn";
+}
+
+function drawMove(tileId, symbol) {
+  gameSpace[tileId].textContent = symbol;
+}
+
+function winnerDisplay(player) {
+  winner.textContent = player + " Wins!";
+  currentPlayer.textContent = '';
+}
+
+function cleanText() {
+  currentPlayer.textContent = '';
+  winner.textContent = '';
+  location.reload(true);
 }

@@ -34,6 +34,24 @@ html {
   margin-top: 50px;
 }
 
+#winner {
+  position: absolute;
+  display: flex;
+  float: right;
+  margin-top: 385px;
+  margin-left: 50px;
+  font-size: 40px;
+}
+
+#currentPlayer {
+  position: absolute;
+  display: flex;
+  float: right;
+  margin-top: 0px;
+  margin-left: 50px;
+  font-size: 32px;
+}
+
 .roomRow>td {
   height: 30px;
   width: 150px;
@@ -168,12 +186,6 @@ input[type=radio] {
 
 
 /* //////////////////////// */
-h2 {
-  font-size: 18px;
-  padding: 10px 20px;
-  color: #575ed8;
-}
-
 #chat {
   height: 400px;
   width: 310px;
