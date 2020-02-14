@@ -151,6 +151,8 @@ function goToGameRoom() {
   gameTableContainer.style.display = "flex";
   waitRoom.style.display = "none";
   waitRoom.innerHTML = "";
+  currentPlayer.textContent = '';
+  winner.textContent = '';
 }
 
 function goToWaitRoom() {
@@ -158,6 +160,8 @@ function goToWaitRoom() {
   gameTableContainer.style.display = "none";
   waitRoom.style.display = "inline-block";
   waitRoom.innerHTML = "Waiting for another player...";
+  currentPlayer.textContent = '';
+  winner.textContent = '';
 }
 
 function goToLobbyRoom() {
@@ -165,6 +169,8 @@ function goToLobbyRoom() {
   gameTableContainer.style.display = "none";
   waitRoom.style.display = "none";
   waitRoom.innerHTML = "";
+  currentPlayer.textContent = '';
+  winner.textContent = '';
 }
 
 socket.on('roomsList', (gameRooms) => {
@@ -263,12 +269,16 @@ function drawMove(tileId, symbol) {
 }
 
 function winnerDisplay(player) {
-  winner.textContent = player + " Wins!";
+  player != "Tie" ? winner.textContent = player + " Wins!" : winner.textContent = player + "!";
+
   currentPlayer.textContent = '';
 }
 
 function cleanText() {
   currentPlayer.textContent = '';
   winner.textContent = '';
+
+  //Easy solution to make the form work again
+  //Doesn't keep data as it refreshes the page
   location.reload(true);
 }

@@ -175,20 +175,21 @@ io.on('connection', function (socket) {
     }
 
     if (player1Win) {
-      console.log('Player1 Wins');
       gameOver = true;
       io.to(gameRooms[roomIndex].roomNumber).emit('winnerDisplay', gameRooms[roomIndex].Players.Player1[0]);
     } else if (player2Win) {
-      console.log('Player2 Wins');
       gameOver = true;
       io.to(gameRooms[roomIndex].roomNumber).emit('winnerDisplay', gameRooms[roomIndex].Players.Player2[0]);
     }
 
     if (!gameOver && (player1.length + player2.length == 9)) {
-      console.log('Tie');
-
-      gameOver = true;
       gameTie = true;
+
+      io.to(gameRooms[roomIndex].roomNumber).emit('winnerDisplay', "Tie");
+    }
+
+    if (gameTie) {
+      return "tie";
     }
 
     if (gameOver) {
@@ -372,18 +373,23 @@ io.on('connection', function (socket) {
 
           //Check if game ended
           let game = checkEndGame(roomIndex);
-          if (game) {
-            cleanBoard(data.roomNumber);
 
-            function end() {
-              gameRooms.splice(roomIndex, 1);
-              io.to(data.roomNumber).emit('leaveRoom');
-              io.to(data.roomNumber).emit('cleanText')
-              io.in(data.roomNumber).clients((err, clients) => {
-                clients.forEach(clientId => io.sockets.connected[clientId].disconnect());
-              });
-              io.sockets.emit('roomsList', gameRooms);
-            }
+          function end() {
+            gameRooms.splice(roomIndex, 1);
+            io.to(data.roomNumber).emit('leaveRoom');
+            io.to(data.roomNumber).emit('cleanText')
+            io.in(data.roomNumber).clients((err, clients) => {
+              clients.forEach(clientId => io.sockets.connected[clientId].disconnect());
+            });
+            io.sockets.emit('roomsList', gameRooms);
+          }
+
+          if (game) {
+            cleanBoard(data.roomNumber)
+
+            setTimeout(end, 3000);
+          } else if (game == "tie") {
+            cleanBoard(data.roomNumber);
 
             setTimeout(end, 3000);
           }
